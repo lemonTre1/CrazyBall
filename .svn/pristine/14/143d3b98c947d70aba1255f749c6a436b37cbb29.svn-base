@@ -1,0 +1,31 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UIController : MonoBehaviour {
+
+
+    public Button m_multiplayer_button; 
+
+    public GameObject multiPlayer;
+
+    void Start () {
+
+        m_multiplayer_button.onClick.AddListener(EnterMultiPlayer);
+
+        DontDestroyOnLoad(this.gameObject);
+    }
+	
+	void Update () {
+		
+	}
+
+    public void EnterMultiPlayer() { 
+
+        multiPlayer.SetActive(true);
+        m_multiplayer_button.gameObject.SetActive(false);
+
+    }
+
+}

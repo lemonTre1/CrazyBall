@@ -1,0 +1,111 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Networking;
+
+
+public class PlayerController :  NetworkBehaviour{
+    
+    public PlayerAttributes m_PlayerAttributes;
+
+    Text PlayerNameText;
+    Text AttributeText;
+    Rigidbody m_rigidbody;
+    GameObject AttackEffect;
+
+    void Start()
+    {
+        m_rigidbody = GetComponent<Rigidbody>();
+        AttackEffect = transform.Find("Sparks").gameObject;
+        AttackEffect.gameObject.SetActive(false);
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        CmdCreatMap(LobbyUI._Instance.mapInfo,LobbyUI._Instance.m_vecotr2);
+        gameObject.AddComponent<SkillController>();
+        Init();
+    }
+
+    void Init()
+    {
+        int playerID = playerControllerId + 1;
+        Camera.main.GetComponent<Camerafollow>().target = transform.gameObject;
+      
+        m_PlayerAttributes = new PlayerAttributes("player0" + playerID, 1, 1, 1);
+        m_PlayerAttributes.MaxSpeed = 20;
+        m_PlayerAttributes.ExpansionMultiple = 1;
+
+        PlayerNameText = ReferenceManager.instance.PersonInfoPanel.transform.Find("PersonName").GetComponentInChildren<Text>();
+        AttributeText = ReferenceManager.instance.PersonInfoPanel.transform.Find("attribute").GetComponent<Text>();
+      
+        transform.GetComponent<MeshRenderer>().material.mainTexture = Resources.Load<Texture>("ball/0" + playerID);
+        UpdateAttribute(false);
+    }
+
+    public void UpdateAttribute(bool isTrigger)
+    {
+        PlayerNameText.text = m_PlayerAttributes.PlayerName;
+        AttributeText.text = "力：" + m_PlayerAttributes.PowerValue +
+               " 体：" + m_PlayerAttributes.StrengthValue +
+               " 智：" + m_PlayerAttributes.IntelligenceValue + "";
+        CmdUpdateAttribute(m_PlayerAttributes.ExpansionMultiple, m_PlayerAttributes.StrengthValue, isTrigger);
+    }
+
+   
+    [Command]
+    public void CmdUpdateAttribute(float expan,int str, bool isTrigger)
+    {
+        RpcUpdateAttribute(expan,str, isTrigger);
+    }
+
+    [ClientRpc]
+    public void RpcUpdateAttribute(float expan, int str,bool isTrigger)
+    {
+        transform.localScale = new Vector3(0.1f, 0.1f, 0.1f) * expan;
+        m_rigidbody.mass = str;
+        AttackEffect.gameObject.SetActive(isTrigger);
+    }
+
+    public void AddForce(Vector3 power)
+    {
+        CmdAddForce(power);
+    }
+
+
+    [Command]
+    public void CmdAddForce(Vector3 power)
+    {
+        RpcAddForce(power);
+    }
+
+
+    [ClientRpc]
+    public void RpcAddForce(Vector3 power)
+    {
+        m_rigidbody.AddForce(power);
+    }
+
+
+    public void Reset()
+    {
+        m_rigidbody.velocity = Vector3.zero;
+        transform.position =new Vector3( Vector3.zero.x+Random.Range(-50,50), Vector3.zero.y+5,Vector3.zero.z + Random.Range(-50, 50));
+    }
+
+
+    void CmdCreatMap(MapType mt,List<Vector2> listValue)
+    {
+        GameObject floorParent = MapManager.instance.CmdCreatMap(mt, listValue);
+        //NetworkServer.Spawn(floorParent.gameObject);
+
+        for (int i = 0; i < listValue.Count; i++)
+        {
+            Debug.Log(listValue[i].ToString());
+        }
+
+    }
+     
+}

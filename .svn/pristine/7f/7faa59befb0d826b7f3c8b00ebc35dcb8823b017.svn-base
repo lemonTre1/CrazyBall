@@ -1,0 +1,19 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SkillACollider : MonoBehaviour {
+
+    void OnCollisionEnter(Collision collisionInfo)
+    {
+   
+        GameObject obj = collisionInfo.collider.gameObject;
+        if (obj.GetComponent<Rigidbody>())
+        {
+            Debug.Log("OnCollisionEnter");
+            Vector3 forward = (obj.transform.position - transform.position).normalized;
+            obj.GetComponent<Rigidbody>().AddForce(forward * 10000*GetComponentInParent<PlayerController>().m_PlayerAttributes.StrengthValue);
+        }
+ 
+    }
+}

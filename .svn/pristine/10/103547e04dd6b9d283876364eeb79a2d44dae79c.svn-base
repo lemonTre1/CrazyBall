@@ -1,0 +1,44 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SkillA : MonoBehaviour {
+
+    public bool IsOn;
+
+    int rotValue;
+    GameObject A;
+    GameObject B;
+
+    // Use this for initialization
+    void Start () {
+        A=transform.GetChild(0).gameObject;
+        B = transform.GetChild(1).gameObject;
+        rotValue = 0;
+        Reset();
+    }
+	
+	// Update is called once per frame
+	void Update () {
+        transform.eulerAngles = new Vector3(0, rotValue, 0);
+        if (IsOn)
+        {
+            rotValue++;
+            if (rotValue >= 360) rotValue = 0;
+        }
+    }
+
+    public void Show()
+    {
+        IsOn = true;
+        A.SetActive(true);
+        B.SetActive(true);
+    }
+
+    public void Reset()
+    {
+        IsOn = false;
+        A.SetActive(false);
+        B.SetActive(false);
+    }
+}

@@ -1,0 +1,60 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class GameManager : NetworkBehaviour
+{
+    public static GameManager Instance = null;
+    public List<PlayerData> playerDatas = new List<PlayerData>();
+    [SerializeField]
+    private float Index;
+    // Start is called before the first frame update
+    private void Awake()
+    {
+        Instance = this;
+    }
+    void Start()
+    {
+        
+    }
+
+    public int GetIndex(PlayerData data)
+    {
+        if (playerDatas.Contains(data))
+        {
+            for (int i = 0; i < playerDatas.Count; i++)
+            {
+                if (playerDatas[i] == data)
+                {
+                    return i;
+                }
+
+            }
+        }
+        else
+        {
+            return -1;
+        }
+
+        return -1;
+
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        if (isServer)
+        {
+            foreach (var _player in playerDatas)
+            {
+                if (_player.transform.position.y < Index && _player.Attacker != -1)
+                {
+                    playerDatas[_player.Attacker].SetScore();
+                    playerDatas[_player.Attacker].Clear();
+                }
+            }
+        }
+       
+    }
+
+}

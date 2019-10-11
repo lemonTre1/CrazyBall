@@ -1,0 +1,29 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LobbyCreateInfo : MonoBehaviour { 
+
+    public string roomInfo = "";
+
+    public MapType m_mapType = MapType.Grass;
+
+    void Start () {
+		
+
+	}
+	
+	void Update () {
+		
+
+	}
+
+
+    public void CreatMapInfo() {
+        Debug.Log("CreatMapInfo().........." + roomInfo);
+
+        LobbyUI._Instance.CreateHost(m_mapType);
+
+    }
+     
+}

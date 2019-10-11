@@ -1,0 +1,53 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class LobbyManager : NetworkLobbyManager {
+
+    public static LobbyManager instance; 
+
+    private void Start()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+    }
+
+    //public override void OnClientSceneChanged(NetworkConnection conn)
+    //{
+    //    Debug.Log("ClientSceneChanged");
+
+    //    MapManager.instance.CmdCreatMap(LobbyUI._Instance.mapInfo);
+    //    base.OnClientSceneChanged(conn);
+    //    //if (clientSceneChangedAction != null)
+    //    //{
+    //    //    clientSceneChangedAction();
+    //    //}
+    //    //base中回调执行ClientScene.AddPlayer(conn, 0, msg);
+    //    //A connection has already been set as ready.There can only be one.
+    //    //UnityEngine.Networking.NetworkLobbyManager:OnClientSceneChanged(NetworkConnection)
+    //    //base.OnClientSceneChanged(conn); 
+
+    //    //if (string.IsNullOrEmpty(this.onlineScene) || this.onlineScene == this.offlineScene)
+    //    //{
+    //    //    ClientScene.Ready(conn);
+    //    //    if (this.autoCreatePlayer)
+    //    //    {
+    //    //        ClientScene.AddPlayer(conn, 0, new PlayerMsg());
+    //    //    }
+    //    //}
+    //}
+
+
+
+
+    private void BeginGame()
+    {
+        Debug.Log("开始");
+        ServerChangeScene(playScene);
+    }
+
+
+}

@@ -1,0 +1,212 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class GameNetWorkManager : MonoBehaviour
+{
+
+    public NetworkManager networkManager;
+    public NetworkDiscovery networkDiscovery;
+
+    private NetworkClient m_Client = new NetworkClient();
+
+    public bool isHost=true;
+    public bool isBuildServer = false;
+
+    public string ip;
+    
+    public List<GameObject> servers = new List<GameObject>();
+
+    public GameObject CreateButton;
+    public GameObject SignAddButton;
+    public GameObject SignOutButton;
+    public GameObject Panel;
+
+    private static GameNetWorkManager instance;
+    public static GameNetWorkManager Instance
+    {
+        get
+        {
+            return instance;
+        }
+    }
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    void Start () {
+
+        
+
+    }
+	
+	// Update is called once per frame
+	void Update () {
+
+		
+	}
+
+    
+    public void Create() {
+
+        NetworkClient client = networkManager.StartHost();
+
+        if (client == null)
+        {
+            Debug.Log("提示:创建测试失败请重试");
+            return;
+        }
+
+        if (!NetworkServer.active)
+        {
+            NetworkServer.Listen(7777);
+            //有客户端让我给他添加角色
+            NetworkServer.RegisterHandler(MsgType.AddPlayer, AddPlayerForServer);
+
+            //点击一次连接出现2个角色
+            m_Client = ClientScene.ConnectLocalServer();
+            m_Client.RegisterHandler(MsgType.Connect, OnConnectSucceed);
+            gameObject.SetActive(false);
+        }
+
+
+        CreateButton.SetActive(false);
+        SignAddButton.SetActive(false);
+        SignOutButton.SetActive(true);
+        Panel.SetActive(true);
+        isHost = true;
+
+    }
+
+    void AddPlayerForServer(NetworkMessage msg)
+    {
+        Debug.Log("AddPlayerForServer");
+        //ClientScene.RegisterPrefab(playerPrefab);
+        //GameObject obj = Instantiate(
+        //                     playerPrefab,
+        //                     m_PlayerInitPos.position,
+        //                     Quaternion.identity) as GameObject;
+        //NetworkServer.AddPlayerForConnection(msg.conn, obj, 0);
+        //NetworkServer.Spawn(obj);
+    }
+
+
+    public void SignIn() {
+       
+        RecUDP();
+        Invoke("SignInGame", 1.1f);
+    }
+
+
+    void SignInGame() {
+
+        //if (isBuildServer)
+        //{
+            CreateButton.SetActive(false);
+            SignAddButton.SetActive(false);
+            SignOutButton.SetActive(true);
+            Panel.SetActive(true);
+            isHost = false;
+
+            m_Client.Connect(networkManager.networkAddress, 7777);
+            m_Client.RegisterHandler(MsgType.Connect, OnConnectSucceed);
+        //}
+        //else
+        //{
+        //    Debug.Log("没有建立服务器。。。。。");
+        //} 
+
+    }
+     
+
+    public void SignOut() {
+        CreateButton.SetActive(true);
+        SignAddButton.SetActive(true);
+        SignOutButton.SetActive(false);
+        Panel.SetActive(false);
+
+        if (isHost)
+        {
+            networkManager.StopHost();
+            Debug.Log("退出登录....");
+        }
+        else
+        {
+            networkManager.StopClient();
+        }
+        isHost = false;
+        RecUDP();
+    }
+
+
+
+    void OnConnectSucceed(NetworkMessage msg) {
+
+        Debug.Log("连接成功。。。。。。。。");
+
+    }
+
+
+
+    void RecUDP() {
+
+        NetworkDiscovery temp = networkDiscovery;
+        if (temp == null)
+        {
+            Debug.LogError("需要继承然后写。。。。。");
+        }
+
+
+        if (!networkDiscovery.isClient)
+        {  
+            networkDiscovery.Initialize();
+            networkDiscovery.StartAsClient();
+            Invoke("IsServer", 1f);
+        } 
+
+    }
+
+
+    void IsServer()
+    { 
+        if (networkDiscovery.running)
+        {
+            if (networkDiscovery.broadcastsReceived.Count > 0)
+            {
+                List<string> ip = new List<string>();
+                List<byte[]> data = new List<byte[]>();
+                foreach (var key in networkDiscovery.broadcastsReceived.Keys)
+                {
+                    NetworkBroadcastResult value;
+                    if (networkDiscovery.broadcastsReceived.TryGetValue(key, out value))
+                    { 
+                        ip.Add(value.serverAddress);
+                        data.Add(value.broadcastData);
+                    }
+                    isBuildServer = true;
+                }
+                 
+            }
+            else
+            {
+                 Debug.LogError("没有扫描到服务器！");
+                 isBuildServer = false;
+            }
+        }
+        StopUDP();
+    }
+
+
+    void StopUDP()
+    {
+        if (networkDiscovery.isClient || networkDiscovery.isServer)
+        {
+            networkDiscovery.StopBroadcast();
+        }
+    }
+
+
+}

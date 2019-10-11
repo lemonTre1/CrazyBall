@@ -1,0 +1,20 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ServerIP : MonoBehaviour {
+
+    public int id;
+
+    public string ip;
+
+    public Text name;
+
+    public void JoinClient() { 
+
+        LobbyUI._Instance.joinIP=ip;
+
+    }
+
+}

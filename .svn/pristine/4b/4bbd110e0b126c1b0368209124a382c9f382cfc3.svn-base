@@ -1,0 +1,60 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+public class PlayerController : MonoBehaviour {
+
+    public GameObject effect;
+    int maxSpeed;
+    Rigidbody m_rigidbody;
+    bool isTriggerSkill;
+    Vector3 currentSpeed;
+    // Use this for initialization
+    void Start () {
+        currentSpeed = Vector3.zero;
+        maxSpeed = 20;
+        isTriggerSkill = false;
+        effect.gameObject.SetActive(false);
+        m_rigidbody = GetComponent<Rigidbody>();
+    }
+
+    void Update()
+    {
+        currentSpeed = new Vector3(m_rigidbody.velocity.x, 0, m_rigidbody.velocity.z);
+
+
+        if (isTriggerSkill)
+        {
+            if (m_rigidbody.velocity == Vector3.zero)
+            {
+                m_rigidbody.AddForce(transform.forward * 10);
+            }
+            else
+            {
+                m_rigidbody.AddForce(currentSpeed.normalized * 10);
+            }
+        }
+
+        if (currentSpeed.magnitude > maxSpeed)
+        {
+            m_rigidbody.velocity /= currentSpeed.magnitude / maxSpeed;
+        }
+
+        Debug.Log(m_rigidbody.velocity.magnitude);
+    }
+
+    public void SkillTrigger(bool b)
+    {
+        effect.gameObject.SetActive(b);
+        isTriggerSkill = b;
+        if (b)
+        {
+            maxSpeed = 40;
+        }
+        else
+        {
+            maxSpeed = 20;
+        }
+    }
+}

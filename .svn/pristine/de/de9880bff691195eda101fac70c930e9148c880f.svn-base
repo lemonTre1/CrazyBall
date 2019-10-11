@@ -1,0 +1,40 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Camerafollow : MonoBehaviour {
+    public float distance = 12;
+    //横向角度
+    public float rot = 0;    //用弧度表示
+    //纵向角度
+    private float roll = 30f * Mathf.PI * 2 / 360;    //弧度
+    //目标物体
+    private GameObject target;
+    void Start()
+    {
+        target = GameObject.Find("Player");
+
+    }
+    void LateUpdate()
+    {
+        //一些判断
+        if (target == null)
+            return;
+        if (Camera.main == null)
+            return;
+        //目标的坐标
+        Vector3 targetPos = target.transform.position;
+        //用三角函数计算相机位置
+        Vector3 cameraPos;
+      
+        float d = distance * Mathf.Cos(roll);
+    
+        float height = distance * Mathf.Sin(roll);
+        cameraPos.z = targetPos.z - d * Mathf.Cos(rot);
+        cameraPos.x = targetPos.x + d * Mathf.Sin(rot);
+        cameraPos.y = targetPos.y + height;
+        Camera.main.transform.position = cameraPos;
+        //对准目标
+        Camera.main.transform.LookAt(target.transform);
+    }
+}

@@ -1,0 +1,33 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+
+public class PlayerController : MonoBehaviour {
+
+    public PlayerAttributes m_PlayerAttributes;
+    public Text PlayerNameText;
+    public Text AttributeText;
+    Rigidbody m_rigidbody;
+    // Use this for initialization
+    void Start () {
+        m_rigidbody = GetComponent<Rigidbody>();
+        m_PlayerAttributes = new PlayerAttributes("cool",1,1,1);
+        m_PlayerAttributes.MaxSpeed = 20;
+        m_PlayerAttributes.ExpansionMultiple = 1;
+        PlayerNameText.text = m_PlayerAttributes.PlayerName;
+        UpdateAttribute();
+    }
+
+
+    public void UpdateAttribute()
+    {
+        AttributeText.text = "力：" + m_PlayerAttributes.PowerValue +
+            " 体：" + m_PlayerAttributes.StrengthValue +
+            " 智：" + m_PlayerAttributes.IntelligenceValue + "";
+
+        transform.localScale = new Vector3(1, 1, 1) * m_PlayerAttributes.ExpansionMultiple;
+        m_rigidbody.mass = m_PlayerAttributes.StrengthValue;
+    }
+}

@@ -1,0 +1,45 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
+
+public class RankItem : NetworkBehaviour {
+
+    public Text name_text;
+
+    [SyncVar(hook =("OnChangeName"))]
+    public string name_str;
+
+
+    public Text score_text;
+
+    [SyncVar(hook =("OnChangeScore"))]
+    public int score_int;
+
+
+    public GameObject target;
+
+    private void Start()
+    {
+        score_text.text = "0";
+        score_int = 0;
+    }
+  
+    void OnChangeName(string nameValue) {
+        name_str = nameValue;
+        name_text.text = name_str;
+    }
+
+
+    void OnChangeScore(int scoreValue) {
+        score_int = scoreValue;
+        score_text.text = score_int.ToString();
+        //Debug.Log("name_str:" + name_str+ ";score:" + score_int);
+
+    }
+
+
+
+
+}

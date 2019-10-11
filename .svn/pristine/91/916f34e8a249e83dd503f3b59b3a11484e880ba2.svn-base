@@ -1,0 +1,109 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Networking;
+using UnityEngine.EventSystems;
+
+public class SkillController : NetworkBehaviour {
+
+    PlayerController m_PlayerController;
+    Rigidbody m_rigidbody;
+
+    GameObject AttackEffect;
+    Slider slider;
+
+    bool isTriggerSkill;
+    Vector3 currentSpeed;
+
+
+    // Use this for initialization
+    void Start () {
+        AttackEffect = transform.Find("Sparks").gameObject;
+        AttackEffect.gameObject.SetActive(false);
+        isTriggerSkill = false;
+
+        if (!isLocalPlayer)
+            return;
+
+        Init();
+    }
+
+    void Init()
+    {
+        m_PlayerController = GetComponent<PlayerController>();
+        m_rigidbody = GetComponent<Rigidbody>();
+        slider = ReferenceManager.instance.EnergyPanel.GetComponentInChildren<Slider>();
+
+
+        EventTrigger trigger = ReferenceManager.instance.SkillPanel.transform.Find("SkillNormal").GetComponent<EventTrigger>();
+        EventTrigger.Entry entryDown = new EventTrigger.Entry();
+        EventTrigger.Entry entryUp = new EventTrigger.Entry();
+        entryDown.eventID = EventTriggerType.PointerDown;
+        entryUp.eventID = EventTriggerType.PointerUp;
+        entryDown.callback.AddListener((data) => { SkillTrigger((PointerEventData)data); });
+        entryUp.callback.AddListener((data) => { SkillRelease((PointerEventData)data); });
+
+        trigger.triggers.Add(entryDown);
+        trigger.triggers.Add(entryUp);
+    }
+
+    void Update()
+    {
+        currentSpeed = new Vector3(m_rigidbody.velocity.x, 0, m_rigidbody.velocity.z);
+
+        if (isTriggerSkill)
+        {
+            m_PlayerController.m_PlayerAttributes.SliderAddVaule = -0.4f;
+            if (m_rigidbody.velocity == Vector3.zero)
+            {
+                m_rigidbody.AddForce(transform.forward * 1000);
+            }
+            else
+            {
+                m_rigidbody.AddForce(currentSpeed.normalized * 1000);
+            }
+        }
+        else
+        {
+            m_PlayerController.m_PlayerAttributes.SliderAddVaule = 0.1f;
+        }
+
+        if (currentSpeed.magnitude > m_PlayerController.m_PlayerAttributes.MaxSpeed)
+        {
+            m_rigidbody.velocity /= currentSpeed.magnitude / m_PlayerController.m_PlayerAttributes.MaxSpeed;
+        }
+
+        if (slider.value == 0)
+        {
+            SkillRelease(null);
+        }
+
+        SliderADD();
+    }
+
+    public void SkillTrigger(PointerEventData eventData)
+    {
+        isTriggerSkill = true;
+        AttackEffect.gameObject.SetActive(true);
+        m_PlayerController.m_PlayerAttributes.StrengthValue = 10;
+        m_PlayerController.m_PlayerAttributes.MaxSpeed = 40;
+        m_PlayerController.m_PlayerAttributes.ExpansionMultiple = 3;
+        m_PlayerController.UpdateAttribute();
+    }
+
+    public void SkillRelease(PointerEventData eventData)
+    {
+        isTriggerSkill = false;
+        AttackEffect.gameObject.SetActive(false);
+        m_PlayerController.m_PlayerAttributes.StrengthValue = 1;
+        m_PlayerController.m_PlayerAttributes.MaxSpeed = 20;
+        m_PlayerController.m_PlayerAttributes.ExpansionMultiple = 1;
+        m_PlayerController.UpdateAttribute();
+    }
+
+    void SliderADD()
+    {
+        slider.value += m_PlayerController.m_PlayerAttributes.SliderAddVaule * Time.deltaTime;
+    }
+}

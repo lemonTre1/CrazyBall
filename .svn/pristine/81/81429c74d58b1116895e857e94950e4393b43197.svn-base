@@ -1,0 +1,89 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class PlayerData : NetworkBehaviour
+{
+
+    [SyncVar(hook = "OnScroeChanged")]
+    public int Scroe = 0;
+    /// <summary>
+    /// 玩家编号
+    /// </summary>
+    [SyncVar(hook = "OnPlayerNumChanged")]
+    public int PlayerNum = -1;
+    /// <summary>
+    /// 攻击者编号
+    /// </summary>
+    [SyncVar(hook = "OnAttackerNumChanged")]
+    public int Attacker = -1;
+
+    void Start()
+    {
+        GameManager.Instance.playerDatas.Add(this);
+        int index = GameManager.Instance.GetIndex(this);
+        if (index != -1)
+        {
+            Init(index);
+        }
+    }
+
+    void Update()
+    {
+
+    }
+    public void Init(int _index)
+    {
+        PlayerNum = _index;
+        Clear();
+    }
+    public void CmdScore()
+    {
+        Scroe++;
+
+    }    
+    public void Clear()
+    {
+        Attacker = -1;
+    
+    }
+
+    [Server]
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Player"))
+        {
+            Attacker = collision.transform.GetComponent<PlayerData>().PlayerNum;
+
+            CharacterMovement cm_collsion = GetComponent<CharacterMovement>();
+            if (cm_collsion == null)
+            {
+                Debug.LogError("[ERROR] : failed call function ---- OnCollisionEnter!");
+                return;
+            }
+            Vector3 vec3Force = collision.contacts[0].point - collision.transform.position;
+
+            Debug.LogError("collision =" + collision.gameObject + "         cm_collsion.speed =" + cm_collsion.speed);
+            cm_collsion.rig.AddForce(vec3Force * cm_collsion.speed);
+        }
+    }
+
+    private void OnScroeChanged(int newValue)
+    {
+        Scroe = newValue;
+        Debug.Log("玩家" + PlayerNum + "Score=" + Scroe);
+    }
+
+    private void OnPlayerNumChanged(int newValue)
+    {
+        PlayerNum = newValue;
+    }
+
+    private void OnAttackerNumChanged(int newValue)
+    {
+        Attacker = newValue;
+        if(newValue==-1)
+          transform.GetComponent<PlayerController>().Reset();
+    }
+}

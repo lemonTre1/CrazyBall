@@ -1,0 +1,127 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
+
+public class LobbyPlayer : NetworkLobbyPlayer {
+
+    //是否已准备
+    [SyncVar]
+    public bool isReady = false;
+
+    void Start () {
+        transform.SetParent(LobbyUI._Instance.playerParent); 
+        transform.localScale = Vector3.one;
+
+
+        if (isLocalPlayer)
+        {
+            transform.GetChild(1).GetComponent<Text>().text = "我"; 
+
+        }
+        else
+        {
+            transform.GetChild(1).GetComponent<Text>().text = "敌人"; 
+
+            InitReady();
+        }
+
+        transform.GetComponentInChildren<Button>().onClick.AddListener(Ready);
+    }
+
+
+    //只会在自己的角色被创建的时候才会调用
+    public override void OnStartLocalPlayer()
+    {
+        //判断自己是否是服务器
+        if (isServer)
+        {
+            LobbyUI._Instance.buttonstart.gameObject.SetActive(true);
+            LobbyUI._Instance.buttonstart.onClick.AddListener(Play);
+        }
+        else
+        {
+            LobbyUI._Instance.buttonstart.gameObject.SetActive(false);
+        }  
+    }
+
+    //准备
+    void Ready()
+    {
+        CmdReady();
+    }
+
+    //在服务器执行
+    [Command]
+    void CmdReady()
+    {
+        //通知客户端执行
+        RpcReady(!readyToBegin);
+    }
+
+    //在客户端执行
+    [ClientRpc]
+    void RpcReady(bool r)
+    {
+        //准备状态切换
+        readyToBegin = r;
+
+        //同步变量，用于记录准备状态，因为readyToBegin在初始被创建时值并不会同步为服务器的值
+        isReady = r;
+
+        //更新UI显示
+        InitReady();
+
+    }
+
+
+    //初始化准备UI
+    void InitReady()
+    {
+        if (isReady)
+        {
+            transform.GetComponentInChildren<Button>().GetComponentInChildren<Text>().text = "取消"; 
+        }
+        else
+        {
+            transform.GetComponentInChildren<Button>().GetComponentInChildren<Text>().text = "准备"; 
+        }
+    }
+
+
+    void Play()
+    {
+        //int k = 0;
+        //for (int i = 0; i < LobbyUI._Instance.playerParent.childCount; i++)
+        //{
+        //    //判断玩家是否准备好
+        //    if (LobbyUI._Instance.playerParent.GetChild(i).GetComponent<LobbyPlayer>().readyToBegin)
+        //    {
+        //        k++;
+        //    }
+        //}
+
+
+        ////如果准备好的玩家数等于服务器的总玩家数
+        //if (k == LobbyManager._Instance.numPlayers)
+        //{ 
+        //    //游戏开始 加载场景
+        //    //LobbyManager.instan.ServerChangeScene(LobbyManager.instan.playScene);
+        Debug.Log("" + LobbyManager.instance.numPlayers);
+        SendReadyToBeginMessage();
+        //}
+        //else
+        //{
+        //    //打开提示框
+        //    //LobbyUI._Instance.SetInfoUI("有玩家未准备！", "确定", Guanbi);
+        //}
+    }
+
+    void Guanbi()
+    {
+        LobbyUI._Instance.RoomGo.SetActive(false);
+    } 
+
+
+}

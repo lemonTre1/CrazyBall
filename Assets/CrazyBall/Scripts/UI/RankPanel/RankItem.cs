@@ -1,0 +1,65 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
+
+public class RankItem : MonoBehaviour {
+
+    public Text name_text;
+
+    public string strName;
+    public string name_str
+    {
+        get
+        {
+            return strName;
+        }
+        set
+        {
+            strName = value;
+            name_text.text = strName;
+        }
+    } 
+
+
+    public Text score_text;
+
+    private int score_int_in;
+    public int score_int
+    {
+        get {
+            return score_int_in;
+        }
+
+        set
+        {
+            score_int_in = value; 
+            score_text.text = score_int.ToString();
+        }
+    }
+     
+
+
+    public GameObject target;
+
+    private void Start()
+    {
+        score_text.text = "0";
+        score_int = 0;
+        name_text.text = name_str;
+
+        //ChangeName(name_str);
+    }
+     
+    void OnChangeScore(int scoreValue) {
+        //score_int = scoreValue;
+        //score_text.text = score_int.ToString();
+        Debug.Log("score:" + score_int);
+
+    }
+
+
+
+
+}

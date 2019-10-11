@@ -1,0 +1,29 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ReferenceManager : MonoBehaviour {
+
+    private const string STR_LEFTJOYSTICK = "UI/Panel/LeftJoyStick";
+    private const string STR_RIGHTJOYSTICK = "UI/Panel/RightJoyStick"; 
+    public GameObject LeftJoyStick = null;
+    public GameObject RightJoyStick = null;
+
+
+    public static ReferenceManager instance;
+
+    private void Awake()
+    {
+        instance = this;
+       
+    } 
+
+    void Start () { 
+
+        //LeftJoyStick = GameObject.Find(STR_LEFTJOYSTICK); 
+        //RightJoyStick = GameObject.Find(STR_RIGHTJOYSTICK); 
+
+    }
+	
+
+}

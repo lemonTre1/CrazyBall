@@ -1,0 +1,205 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class GameNetWorkManager : MonoBehaviour
+{ 
+    public NetworkManager networkManager;
+    public NetworkDiscovery networkDiscovery;
+
+    private NetworkClient m_Client = new NetworkClient();
+
+    public bool isHost=true;
+
+    public string ip;
+
+    //服务器列表
+    public Transform serverList;
+
+    //服务器列表
+    public List<GameObject> servers = new List<GameObject>();
+
+
+    public GameObject prefabServer;
+
+    //服务器预设体
+    public GameObject CreateButton;
+    public GameObject SignAddButton;
+    public GameObject SignOutButton;
+    public GameObject Saomiao;
+    public GameObject Panel;
+
+    private static GameNetWorkManager instance;
+    public static GameNetWorkManager Instance
+    {
+        get
+        {
+            return instance;
+        }
+    }
+
+    private void Awake()
+    {
+        instance = this;
+    } 
+    
+    public void Create() {
+
+        m_Client = networkManager.StartHost(); 
+        networkDiscovery.broadcastData = GameClient._Instance.Client_IP;
+
+        if (m_Client == null)
+        {
+            Debug.Log("提示:创建测试失败请重试");
+            return;
+        }
+        
+
+        CreateButton.SetActive(false);
+        SignAddButton.SetActive(false);
+        SignOutButton.SetActive(true);
+        Panel.SetActive(true);
+        isHost = true;
+
+        SendUDP();
+
+        Debug.Log("networkManager.networkAddress:" + networkManager.networkAddress);
+    } 
+
+    public void SignIn() {
+
+        networkManager.networkAddress = "192.168.3.20";
+        m_Client = networkManager.StartClient();
+        CreateButton.SetActive(false);
+        SignAddButton.SetActive(false);
+        SignOutButton.SetActive(true);
+        Panel.SetActive(true);
+        isHost = false;
+
+        Debug.Log("连接成功。。。。。。。。");
+
+    }
+    
+
+    public void SignOut() {
+        CreateButton.SetActive(true);
+        SignAddButton.SetActive(true);
+        SignOutButton.SetActive(false);
+        Panel.SetActive(false);
+
+        if (isHost)
+        {
+            networkManager.StopHost();
+            Debug.Log("退出登录....");
+        }
+        else
+        {
+            networkManager.StopClient();
+        }
+        m_Client.Disconnect();
+        isHost = false;
+        RecUDP();
+    }
+
+    public void SaoMiao() {
+
+
+        RecUDP();
+
+
+    }
+
+    //发送广播
+    void SendUDP()
+    {
+        //先停止接收
+        StopUDP();
+
+        networkDiscovery.Initialize();
+
+        //发送
+        networkDiscovery.StartAsServer();
+        print("开始发送广播！");
+    }
+
+
+    void RecUDP() {
+
+        NetworkDiscovery temp = networkDiscovery;
+        if (temp == null)
+        {
+            Debug.LogError("temp = null。。。。。");
+        }
+
+
+        if (!networkDiscovery.isClient)
+        { 
+            //for (int i = 0; i < serverList.childCount; i++)
+            //{
+            //    Destroy(serverList.GetChild(i).gameObject);
+            //}
+            //servers.Clear();
+
+            networkDiscovery.Initialize();
+
+            networkDiscovery.StartAsClient();
+
+            Invoke("IsServer", 1f);
+
+            print("开始扫描服务器！");
+        } 
+
+    }
+
+
+    void IsServer()
+    { 
+        if (networkDiscovery.running)
+        {
+            if (networkDiscovery.broadcastsReceived.Count > 0)
+            {
+                List<string> ip = new List<string>();
+
+                foreach (var key in networkDiscovery.broadcastsReceived.Keys)
+                {
+                    NetworkBroadcastResult value;
+                    if (networkDiscovery.broadcastsReceived.TryGetValue(key, out value))
+                    {
+                        if (prefabServer != null && serverList != null)
+                        {
+                            servers.Add(Instantiate(prefabServer, serverList));
+                        } 
+                        ip.Add(value.serverAddress);
+                    }
+                }
+
+
+                for (int i = 0; i < servers.Count; i++)
+                {
+                    servers[i].GetComponent<ServerIP>().id = i;
+                    servers[i].GetComponent<ServerIP>().ip = ip[i];
+                } 
+
+            }
+            else
+            {
+                 Debug.LogError("没有扫描到服务器！");
+            }
+        }
+
+        print("扫描完毕！扫描到" + networkDiscovery.broadcastsReceived.Count + "个服务器！");
+        StopUDP();
+    }
+
+    //停止广播
+    void StopUDP()
+    {
+        if (networkDiscovery.isClient || networkDiscovery.isServer)
+        {
+            networkDiscovery.StopBroadcast();
+        }
+    }
+
+
+}

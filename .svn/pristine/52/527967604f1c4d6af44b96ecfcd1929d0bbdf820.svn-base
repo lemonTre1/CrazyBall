@@ -1,0 +1,28 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LobbyCreateInfo : MonoBehaviour { 
+
+    public string roomInfo = "";
+
+
+	void Start () {
+		
+
+	}
+	
+	void Update () {
+		
+
+	}
+
+
+    public void CreatMapInfo() {
+        Debug.Log("CreatMapInfo().........." + roomInfo);
+
+        LobbyUI._Instance.CreateHost(roomInfo);
+
+    }
+     
+}

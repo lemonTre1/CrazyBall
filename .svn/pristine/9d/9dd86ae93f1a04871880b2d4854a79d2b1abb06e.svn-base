@@ -1,0 +1,50 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Networking;
+
+
+public class PlayerController :  NetworkBehaviour{
+
+    public PlayerAttributes m_PlayerAttributes;
+
+    Text PlayerNameText;
+    Text AttributeText;
+    Rigidbody m_rigidbody;
+    // Use this for initialization
+    void Start () {
+        if (!isLocalPlayer)
+            return;
+
+        Init();
+        m_PlayerAttributes = new PlayerAttributes("cool",1,1,1);
+        m_PlayerAttributes.MaxSpeed = 20;
+        m_PlayerAttributes.ExpansionMultiple = 1;
+        PlayerNameText.text = m_PlayerAttributes.PlayerName;
+        UpdateAttribute();
+    }
+
+    void Init()
+    {
+        m_rigidbody = GetComponent<Rigidbody>();
+        PlayerNameText = ReferenceManager.instance.PersonInfoPanel.transform.Find("PersonName").GetComponentInChildren<Text>();
+        AttributeText= ReferenceManager.instance.PersonInfoPanel.transform.Find("attribute").GetComponent<Text>();
+        Camera.main.GetComponent<CameraFollow>().target = transform;
+    }
+
+    public void UpdateAttribute()
+    {
+        AttributeText.text = "力：" + m_PlayerAttributes.PowerValue +
+            " 体：" + m_PlayerAttributes.StrengthValue +
+            " 智：" + m_PlayerAttributes.IntelligenceValue + "";
+
+        transform.localScale = new Vector3(1, 1, 1) * m_PlayerAttributes.ExpansionMultiple;
+        m_rigidbody.mass = m_PlayerAttributes.StrengthValue;
+    }
+
+    public void Reset()
+    {
+        transform.position = Vector3.zero;
+    }
+}

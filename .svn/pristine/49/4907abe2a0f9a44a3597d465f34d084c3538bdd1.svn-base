@@ -1,0 +1,92 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+
+public class SkillController : MonoBehaviour {
+
+    PlayerController m_PlayerController;
+    Rigidbody m_rigidbody;
+
+    GameObject AttackEffect;
+    Slider slider;
+
+    bool isTriggerSkill;
+    Vector3 currentSpeed;
+
+
+    // Use this for initialization
+    void Start () {
+        Init();
+        isTriggerSkill = false;
+        AttackEffect.gameObject.SetActive(false);
+    }
+
+    void Init()
+    {
+        m_PlayerController = GetComponent<PlayerController>();
+        m_rigidbody = GetComponent<Rigidbody>();
+        slider = ReferenceManager.instance.EnergyPanel.GetComponentInChildren<Slider>();
+        AttackEffect = transform.Find("PlayerAttackEffect").gameObject;
+    }
+
+    void Update()
+    {
+        currentSpeed = new Vector3(m_rigidbody.velocity.x, 0, m_rigidbody.velocity.z);
+
+        if (isTriggerSkill)
+        {
+            m_PlayerController.m_PlayerAttributes.SliderAddVaule = -0.4f;
+            if (m_rigidbody.velocity == Vector3.zero)
+            {
+                m_rigidbody.AddForce(transform.forward * 1000);
+            }
+            else
+            {
+                m_rigidbody.AddForce(currentSpeed.normalized * 1000);
+            }
+        }
+        else
+        {
+            m_PlayerController.m_PlayerAttributes.SliderAddVaule = 0.1f;
+        }
+
+        if (currentSpeed.magnitude > m_PlayerController.m_PlayerAttributes.MaxSpeed)
+        {
+            m_rigidbody.velocity /= currentSpeed.magnitude / m_PlayerController.m_PlayerAttributes.MaxSpeed;
+        }
+
+        if (slider.value == 0)
+        {
+            SkillTrigger(false);
+        }
+
+        SliderADD();
+    }
+
+    public void SkillTrigger(bool b)
+    {
+        AttackEffect.gameObject.SetActive(b);
+        isTriggerSkill = b;
+        if (b)
+        {
+            m_PlayerController.m_PlayerAttributes.StrengthValue = 10;
+            m_PlayerController.m_PlayerAttributes.MaxSpeed = 40;
+            m_PlayerController.m_PlayerAttributes.ExpansionMultiple = 3;
+        }
+        else
+        {
+            m_PlayerController.m_PlayerAttributes.StrengthValue = 1;
+            m_PlayerController.m_PlayerAttributes.MaxSpeed = 20;
+            m_PlayerController.m_PlayerAttributes.ExpansionMultiple = 1;
+        }
+
+        m_PlayerController.UpdateAttribute();
+    }
+
+    void SliderADD()
+    {
+        slider.value += m_PlayerController.m_PlayerAttributes.SliderAddVaule * Time.deltaTime;
+    }
+}

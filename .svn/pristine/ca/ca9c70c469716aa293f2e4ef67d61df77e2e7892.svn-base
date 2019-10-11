@@ -1,0 +1,146 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+
+public class CharacterMovement : NetworkBehaviour {
+
+    [Header("Movement Attribute")]
+    public float speed = 5;
+    public float rotAngle = 0;
+    public float turnSmoothTime = 0.2f;
+    public Vector3 forward;
+    float turnnSmoothVelocity;
+    public float speedrate = 1;
+    [Header("Reference")]
+    CharacterController controller;
+    public Rigidbody rig;
+    public float inputHorizontal;
+    public float inputVertical;
+   
+    [Header("Body parts reference")]
+
+    public GameObject upperBody;
+    public GameObject lowerBody;
+    public GameObject m_inpul_left;
+    public GameObject m_inpul_Right;
+
+    [Header("Platform")]
+    public bool PC = true;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        Debug.Log("OnStartServer()LobbyUI._Instance.mapInfo:" + LobbyUI._Instance.mapInfo);
+        
+    }
+
+
+    //当自己的角色被创建的时候
+    public override void OnStartLocalPlayer()
+    {
+        //关闭所有UI显示
+        LobbyUI._Instance.AllUIFalse();
+        Debug.Log("OnStartLocalPlayer()LobbyUI._Instance.mapInfo:" + LobbyUI._Instance.mapInfo);
+     
+        transform.position = new Vector3(transform.position.x, transform.position.y+2, transform.position.z);
+    }
+
+
+    void Start () {
+         
+
+        controller = GetComponent<CharacterController>();
+        rig = GetComponent<Rigidbody>();
+
+        m_inpul_left = ReferenceManager.instance.LeftJoyStick;
+        m_inpul_Right= ReferenceManager.instance.RightJoyStick;
+     }
+
+    //public override void OnStartLocalPlayer()
+    //{
+    //    this.gameObject.name = "LocalPlayer";
+    //}
+     
+    void Update () {
+
+        if (!isLocalPlayer)
+            return;
+
+        RpcMove();
+    }
+
+     
+   
+
+    //[Command]
+    //void CmdMove()
+    //{
+    //    RpcMove();
+    //}
+
+    //[ClientRpc]
+    void RpcMove()
+    {
+        float fHori = Input.GetAxis("Horizontal");
+        float fVerti = Input.GetAxis("Vertical");
+        rig.AddForce(new Vector3(fHori, 0, fVerti) * speedrate);
+        speed = rig.velocity.magnitude;
+
+        inputHorizontal = Input.GetAxisRaw("Vertical");
+
+        MobileInputController mic = m_inpul_left.GetComponent<MobileInputController>();
+        rig.AddForce(new Vector3(mic.Coordinate().x, 0, mic.Coordinate().y) * speedrate);
+
+        Vector3 from = new Vector3(0f, 0f, 1f);
+        Vector3 to = new Vector3(m_inpul_Right.GetComponent<MobileInputController>().Horizontal, 0f, m_inpul_Right.GetComponent<MobileInputController>().Vertical);
+
+        if (m_inpul_Right.GetComponent<MobileInputController>().Horizontal != 0 && m_inpul_Right.GetComponent<MobileInputController>().Vertical != 0)
+        {
+            float angle = Vector3.SignedAngle(from, to, Vector3.up);
+            rotAngle = angle;
+
+            transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, angle, ref turnnSmoothVelocity, turnSmoothTime);
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Player"))
+        {
+            CmdAddForec(collision);
+        }
+    }
+
+    [Command]
+    void CmdAddForec(Collision collision)
+    {
+            //CharacterMovement cm_collsion = collision.gameObject.GetComponent<CharacterMovement>();
+            //if (cm_collsion == null)
+            //{
+            //    Debug.LogError("[ERROR] : failed call function ---- OnCollisionEnter!");
+            //    return;
+            //}
+            //Vector3 vec3Force = transform.position - collision.contacts[0].point;
+
+            //Debug.LogError("collision =" + collision.gameObject + "         cm_collsion.speed =" + cm_collsion.speed);
+            //rig.AddForce(vec3Force * cm_collsion.speed);
+        RpcAddForce(collision);
+    }
+
+    [ClientRpc]
+    void RpcAddForce(Collision collision)
+    {
+        CharacterMovement cm_collsion = collision.gameObject.GetComponent<CharacterMovement>();
+        if (cm_collsion == null)
+        {
+            Debug.LogError("[ERROR] : failed call function ---- OnCollisionEnter!");
+            return;
+        }
+        Vector3 vec3Force = transform.position - collision.contacts[0].point;
+
+        Debug.LogError("vec3Force ="+ vec3Force);
+        Debug.LogError("collision =" + collision.gameObject + "         cm_collsion.speed =" + cm_collsion.speed);
+        rig.AddForce(vec3Force * cm_collsion.speed);
+    }
+}

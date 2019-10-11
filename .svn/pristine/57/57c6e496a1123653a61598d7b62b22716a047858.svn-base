@@ -1,0 +1,88 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+
+public class PlayerController : MonoBehaviour {
+
+    public GameObject SliderObject;
+    public GameObject AttackEffect;
+    int maxSpeed;
+    Rigidbody m_rigidbody;
+    bool isTriggerSkill;
+    Vector3 currentSpeed;
+    Slider slider;
+    Image sliderImage;
+    float sliderAddVaule;
+    // Use this for initialization
+    void Start () {
+        sliderAddVaule = 0.1f;
+        currentSpeed = Vector3.zero;
+        maxSpeed = 20;
+        isTriggerSkill = false;
+        AttackEffect.gameObject.SetActive(false);
+        m_rigidbody = GetComponent<Rigidbody>();
+        slider = SliderObject.GetComponent<Slider>();
+        sliderImage = SliderObject.transform.Find("Fill").GetComponentInChildren<Image>();
+    }
+
+    void Update()
+    {
+        currentSpeed = new Vector3(m_rigidbody.velocity.x, 0, m_rigidbody.velocity.z);
+
+
+        if (isTriggerSkill)
+        {
+            sliderAddVaule = -0.4f;
+            if (m_rigidbody.velocity == Vector3.zero)
+            {
+                m_rigidbody.AddForce(transform.forward * 1000);
+            }
+            else
+            {
+                m_rigidbody.AddForce(currentSpeed.normalized * 1000);
+            }
+        }
+        else
+        {
+            sliderAddVaule = 0.1f;
+        }
+
+        if (currentSpeed.magnitude > maxSpeed)
+        {
+            m_rigidbody.velocity /= currentSpeed.magnitude / maxSpeed;
+        }
+
+        if (slider.value == 0)
+        {
+            SkillTrigger(false);
+        }
+
+        SliderADD();
+    }
+
+    void SliderADD()
+    {
+        slider.value += sliderAddVaule * Time.deltaTime;
+        sliderImage.color = Color.Lerp(Color.red, Color.green, slider.value);
+    }
+
+    public void SkillTrigger(bool b)
+    {
+        AttackEffect.gameObject.SetActive(b);
+        isTriggerSkill = b;
+        if (b)
+        {
+            m_rigidbody.mass = 10;
+            transform.localScale = new Vector3(3,3,3);
+            maxSpeed = 40;
+        }
+        else
+        {
+            m_rigidbody.mass = 1;
+            transform.localScale = new Vector3(1, 1, 1);
+            maxSpeed = 20;
+        }
+    }
+}

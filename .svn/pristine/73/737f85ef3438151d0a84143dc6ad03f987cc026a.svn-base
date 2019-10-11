@@ -1,0 +1,168 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public enum MapType
+{
+    Grass,
+    Rock,
+    Ice,
+    Mire
+}
+
+public class MapManager : MonoBehaviour {
+    public int Length = 100;
+    public int Width = 100;
+
+    public int SpecialFloor = 15;
+
+    public GameObject FloorPrefab;
+    public Transform FloorParent;
+
+    void Start () {
+        if (!checkPara())
+        {
+            Debug.LogError("[ERROR] : failed call function ---- checkPara!");
+            return;
+        }
+
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            CreateMap(MapType.Grass);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            CreateMap(MapType.Rock);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            CreateMap(MapType.Ice);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            CreateMap(MapType.Mire);
+        }
+    }
+	
+    bool checkPara()
+    {
+        if (FloorPrefab==null)
+        {
+            Debug.LogError("[ERROR] : failed call function ---- checkPara! FloorPrefab==null!");
+            return false;
+        }
+
+        return true;
+    }
+
+    public void CreateMap(MapType mt)
+    {
+        CreateFloor();
+
+        switch (mt)
+        {
+            case MapType.Grass:
+                GrassMap();
+                break;
+            case MapType.Rock:
+                RockMap();
+                break;
+            case MapType.Ice:
+                IceMap();
+                break;
+            case MapType.Mire:
+                MireMap();
+                break;
+            default:
+                break;
+        }
+    }
+
+    void CreateFloor()
+    {
+        for (int i = 0; i <= Length; i++)
+        {
+            for (int j = 0; j <= Width; j++)
+            {
+                GameObject gFloor = GameObject.Instantiate(FloorPrefab, FloorParent);
+                gFloor.transform.position = new Vector3(i-50,0,j-50);
+                gFloor.name = (i - 50) + "_" + (j - 50);
+            }
+        }
+    }
+
+    void GrassMap()
+    {
+        for (int i = 0; i < SpecialFloor; i++)
+        {
+            int SpecialLengthPos = Random.Range(-50, 50);
+            int SpecialWidthPos = Random.Range(-50, 50);
+
+            //string strSpecialFloorName = SpecialLengthPos + "_"+ SpecialWidthPos;
+            for (int j = 0; j < FloorParent.childCount; j++)
+            {
+                if (FloorParent.GetChild(j).name== (SpecialLengthPos-1) + "_" + (SpecialWidthPos-1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos - 1) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos - 1) + "_" + (SpecialWidthPos + 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos - 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos + 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos - 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos + 1)
+                    )
+                {
+                    Destroy(FloorParent.GetChild(j).gameObject);
+                }
+            }
+        }
+
+    }
+
+    void RockMap()
+    {
+        for (int i = 0; i < SpecialFloor; i++)
+        {
+            int SpecialLengthPos = Random.Range(-50, 50);
+            int SpecialWidthPos = Random.Range(-50, 50);
+
+            //string strSpecialFloorName = SpecialLengthPos + "_" + SpecialWidthPos;
+
+            for (int j = 0; j < FloorParent.childCount; j++)
+            {
+                if (FloorParent.GetChild(j).name == (SpecialLengthPos - 1) + "_" + (SpecialWidthPos - 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos - 1) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos - 1) + "_" + (SpecialWidthPos + 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos - 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos) + "_" + (SpecialWidthPos + 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos - 1)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos)
+                    || FloorParent.GetChild(j).name == (SpecialLengthPos + 1) + "_" + (SpecialWidthPos + 1)
+                    )
+                {
+                    GameObject gSpecialFloor = GameObject.Instantiate(FloorPrefab, FloorParent);
+                    gSpecialFloor.transform.position = FloorParent.GetChild(j).position + new Vector3(0f,1f,0f) ;
+
+                }
+            }
+        }
+    }
+
+    void IceMap()
+    {
+
+    }
+
+    void MireMap()
+    {
+
+    }
+}

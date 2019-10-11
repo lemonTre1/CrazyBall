@@ -1,0 +1,51 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
+
+public class LobbyPlayerController : NetworkBehaviour
+{
+
+    public Text NameText;
+
+    [SyncVar(hook = "OnMyName")]
+    public string playerName = "";
+
+    private void Start()
+    {
+        Debug.Log("playerName:" + playerName);
+        OnMyName(playerName);
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        base.OnStartLocalPlayer();
+        SetupLocalPlayer();
+    }
+
+    //public override void OnStartAuthority()
+    //{
+    //    base.OnStartAuthority();
+       
+    //}
+
+    void SetupLocalPlayer()
+    {
+        Debug.Log("SetupLocalPlayer()LobbyUI._Instance.m_name:" + LobbyUI._Instance.m_name);
+        CmdNameChanged(LobbyUI._Instance.m_name);
+    }
+
+
+    [Command]
+    public void CmdNameChanged(string name)
+    {
+        playerName = name;
+    }
+
+    public void OnMyName(string newName)
+    {
+        playerName = newName;
+        NameText.text = playerName;
+    }
+}

@@ -1,0 +1,33 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GameScoreManager : MonoBehaviour
+{
+    public List<Player> listplayer;
+    [SerializeField]
+    private float Index;
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        foreach (var _player in listplayer)
+        {
+            if (_player.transform.position.y < Index&&_player.Attacker!=-1)
+            {
+                listplayer[_player.Attacker].SetScore();
+                listplayer[_player.Attacker].Clear();
+            }
+        }
+    }
+
+    public void Init()
+    {
+
+    }
+}
